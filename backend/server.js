@@ -3,10 +3,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 const taskRoute = require("./routes/taskRoute");
 const app = express();
+const cors = require("cors");
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cors());
 app.use(taskRoute);
 
 const PORT = process.env.PORT || 5000;
