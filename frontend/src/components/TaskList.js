@@ -1,14 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Task from "./Task";
 import TaskForm from "./TaskForm";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { URL } from "../App";
-
+import loadingImage from "../assets/loader.gif";
 
 // http://localhost:5000/api/tasks
 
 const TaskList = () => {
+  const [tasks, setTasks] = useState([]);
+  const [completedTasks, setCompletedTasks] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     completed: false,
@@ -20,6 +24,23 @@ const TaskList = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  const getTasks = async () => {
+    setIsLoading(true);
+    try {
+      const { data } = await axios.get(`${URL}/api/tasks`);
+      setTasks(data);
+      setIsLoading(false);
+    } catch (error) {
+      toast.error(error.message);
+      console.log(error);
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getTasks();
+  }, []);
+
   const createTask = async (e) => {
     e.preventDefault();
     if (name === "") {
@@ -29,6 +50,17 @@ const TaskList = () => {
       await axios.post(`${URL}/api/tasks`, formData);
       toast.success("Task added successfully!");
       setFormData({ ...formData, name: "" });
+      getTasks();
+    } catch (error) {
+      toast.error(error.message);
+      console.log(error);
+    }
+  };
+
+  const deleteTask = async (id) => {
+    try {
+      await axios.delete(`${URL}/api/tasks/${id}`);
+      getTasks();
     } catch (error) {
       toast.error(error.message);
       console.log(error);
@@ -52,7 +84,27 @@ const TaskList = () => {
         </p>
       </div>
       <hr />
-      <Task />
+      {isLoading && (
+        <div className="--flex-center">
+          <img src={loadingImage} />
+        </div>
+      )}
+      {!isLoading && tasks.length === 0 ? (
+        <p className="--py">No task added. Please add a task!</p>
+      ) : (
+        <>
+          {tasks.map((task, index) => {
+            return (
+              <Task
+                key={task._id}
+                task={task}
+                index={index}
+                deleteTask={deleteTask}
+              />
+            );
+          })}
+        </>
+      )}
     </div>
   );
 };
