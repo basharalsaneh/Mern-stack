@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { URL } from "../App";
 import loadingImage from "../assets/loader.gif";
+import { FaSlideshare } from "react-icons/fa";
 
 // http://localhost:5000/api/tasks
 
@@ -12,6 +13,8 @@ const TaskList = () => {
   const [tasks, setTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [taskId, setTaskId] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -67,6 +70,45 @@ const TaskList = () => {
     }
   };
 
+  const getSingleTask = async (task) => {
+    await setFormData({ name: task.name, completed: false });
+    await setTaskId(task._id);
+    await setIsEditing(true);
+  };
+
+  const updateTask = async (e) => {
+    e.preventDefault();
+    if (name === "") {
+      return toast.error("Input field cannot be empty");
+    }
+    try {
+      await axios.put(`${URL}/api/tasks/${taskId}`, formData);
+      toast.success("Task updated successfully!");
+      setFormData({ ...formData, name: "" });
+      setIsEditing(false);
+      getTasks();
+    } catch (error) {
+      toast.error(error.message);
+      console.log(error);
+    }
+  };
+
+  const setToComplete = async (task) => {
+    const newFormData = {
+      name: task.name,
+      completed: true,
+    };
+
+    try {
+      await axios.put(`${URL}/api/tasks/${task._id}`, newFormData);
+      toast.success("Task completed successfully!");
+      getTasks();
+    } catch (error) {
+      toast.error(error.message);
+      console.log(error);
+    }
+  };
+
   return (
     <div>
       <h2>Task Manager</h2>
@@ -74,6 +116,8 @@ const TaskList = () => {
         name={name}
         handleInputChange={handleInputChange}
         createTask={createTask}
+        isEditing={isEditing}
+        updateTask={updateTask}
       />
       <div className="--flex-between --pb">
         <p>
@@ -86,7 +130,7 @@ const TaskList = () => {
       <hr />
       {isLoading && (
         <div className="--flex-center">
-          <img src={loadingImage} />
+          <img src={loadingImage} alt="Loading..." />
         </div>
       )}
       {!isLoading && tasks.length === 0 ? (
@@ -100,6 +144,8 @@ const TaskList = () => {
                 task={task}
                 index={index}
                 deleteTask={deleteTask}
+                getSingleTask={getSingleTask}
+                setToComplete={setToComplete}
               />
             );
           })}
