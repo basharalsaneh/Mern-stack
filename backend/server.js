@@ -8,7 +8,14 @@ const cors = require("cors");
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000/",
+      "https://task-manager-apzo.onrender.com",
+    ],
+  })
+);
 app.use(taskRoute);
 
 const PORT = process.env.PORT || 5000;
