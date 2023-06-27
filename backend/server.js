@@ -12,7 +12,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000/",
-      "https://task-manager-apzo.onrender.com",
+      "https://task-manager-apzo-z2c9.onrender.com",
     ],
   })
 );
